@@ -15,7 +15,7 @@
 
 ```yaml
 kind: Role
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   namespace: default
   name: pod-reader
@@ -35,7 +35,7 @@ ClusterRole 具有与 Role 相同的权限角色控制能力，不同的是 Clus
 
 ```yaml
 kind: ClusterRole
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   # "namespace" omitted since ClusterRoles are not namespaced
   name: secret-reader
@@ -56,7 +56,7 @@ RoleBinding 可以在同一命名空间中引用对应的 Role，以下 RoleBind
 ```yaml
 # This role binding allows "jane" to read pods in the "default" namespace.
 kind: RoleBinding
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: read-pods
   namespace: default
@@ -77,7 +77,7 @@ roleRef:
 ```yaml
 # This role binding allows "dave" to read secrets in the "development" namespace.
 kind: RoleBinding
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: read-secrets
   namespace: development # This only grants permissions within the "development" namespace.
@@ -96,7 +96,7 @@ roleRef:
 ```yaml
 # This cluster role binding allows anyone in the "manager" group to read secrets in any namespace.
 kind: ClusterRoleBinding
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: read-secrets-global
 subjects:
@@ -121,7 +121,7 @@ GET /api/v1/namespaces/{namespace}/pods/{name}/log
 
 ```yaml
 kind: Role
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   namespace: default
   name: pod-and-pod-logs-reader
@@ -135,7 +135,7 @@ rules:
 
 ```yaml
 kind: Role
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   namespace: default
   name: configmap-updater
@@ -397,7 +397,7 @@ RBAC API 会通过阻止用户编辑 Role 或 RoleBinding 来进行特权升级�
 以下样例中，ClusterRole 和 RoleBinding 将允许 “user-1” 用户具有授予其他用户在 “user-1-namespace” namespace 下具有 admin、edit 和 view roles 的权限
 
 ```yaml
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: role-grantor
@@ -410,7 +410,7 @@ rules:
   verbs: ["bind"]
   resourceNames: ["admin","edit","view"]
 ---
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: role-grantor-binding
