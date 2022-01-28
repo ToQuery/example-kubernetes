@@ -1,0 +1,151 @@
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: example-kubernetes-app-es-storage
+provisioner: kubernetes.io/no-provisioner
+volumeBindingMode: WaitForFirstConsumer
+
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: example-kubernetes-app-es-pv
+spec:
+  capacity:
+    storage: 2Gi
+  volumeMode: Filesystem  # Filesystem（文件系统） Block（块）
+  accessModes:
+    - ReadWriteOnce       # 卷可以被一个节点以读写方式挂载
+  persistentVolumeReclaimPolicy: Delete
+  storageClassName: example-kubernetes-app-es-storage
+  local:
+    path: /Users/toquery/data/es-data
+  nodeAffinity:
+    required:
+      # 通过 hostname 限定在某个节点创建存储卷
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: kubernetes.io/hostname
+              operator: In
+              values:
+                - docker-desktop
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: example-kubernetes-app-es-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: example-kubernetes-app-es-storage
+  resources:
+    requests:
+      storage: 2Gi
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: example-kubernetes-app-es
+data:
+  elasticsearch.yml: |
+    cluster.name: "${NAMESPACE}"
+    node.name: "${POD_NAME}"
+    network.host: 0.0.0.0
+    discovery.seed_hosts: "example-kubernetes-app-es"
+    cluster.initial_master_nodes: "example-kubernetes-app-es-0,example-kubernetes-app-es-1,example-kubernetes-app-es-2"
+---
+# Elasticsearch deployment itself
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: example-kubernetes-app-es
+  labels:
+    app: example-kubernetes-app-es
+    kubernetes.io/cluster-service: "true"
+    addonmanager.kubernetes.io/mode: Reconcile
+spec:
+  serviceName: example-kubernetes-app-es
+  replicas: 3
+  selector:
+    matchLabels:
+      app: example-kubernetes-app-es
+  template:
+    metadata:
+      labels:
+        app: example-kubernetes-app-es
+        kubernetes.io/cluster-service: "true"
+    spec:
+      serviceAccountName: example-kubernetes-app-es
+      containers:
+        - image: elasticsearch:7.16.3
+          name: example-kubernetes-app-es
+          resources:
+            limits:
+              cpu: '1'
+              memory: 1Gi
+            requests:
+              cpu: '1'
+              memory: 1Gi
+          ports:
+            - containerPort: 9200
+              name: db
+              protocol: TCP
+            - containerPort: 9300
+              name: transport
+              protocol: TCP
+          volumeMounts:
+            - name: example-kubernetes-app-es-data
+              mountPath: /data
+            - name: example-kubernetes-app-es-config
+              mountPath: /usr/share/elasticsearch/config/elasticsearch.yml
+              subPath: elasticsearch.yml
+          env:
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+      volumes:
+        - name: example-kubernetes-app-es-data
+          persistentVolumeClaim:
+            claimName: example-kubernetes-app-es-pvc
+
+      # Elasticsearch requires vm.max_map_count to be at least 262144.
+      # If your OS already sets up this number to a higher value, feel free
+      # to remove this init container.
+      initContainers:
+        - image: alpine:3.6
+          command: ["/sbin/sysctl", "-w", "vm.max_map_count=262144"]
+          name: example-kubernetes-app-es-init
+          securityContext:
+            privileged: true
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: example-kubernetes-app-es
+  labels:
+    app: example-kubernetes-app-es
+    kubernetes.io/cluster-service: "true"
+    addonmanager.kubernetes.io/mode: Reconcile
+    kubernetes.io/name: "Elasticsearch"
+spec:
+  type: ClusterIP
+  clusterIP: None # headless
+  ports:
+    - port: 9200
+      protocol: TCP
+      name: db
+      targetPort: db
+    - name: in
+      port: 9300
+      protocol: TCP
+  selector:
+    app: example-kubernetes-app-es

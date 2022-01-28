@@ -1,0 +1,18 @@
+kind: Pod
+apiVersion: v1
+metadata:
+  name: example-kubernetes-pod
+spec:
+  volumes:
+    - name: example-kubernetes-volume
+      persistentVolumeClaim:
+        claimName: example-kubernetes-pvc
+  containers:
+    - name: example-kubernetes-container
+      image: nginx
+      ports:
+        - containerPort: 80
+          name: http-server
+      volumeMounts:
+        - mountPath: "/usr/share/nginx/html"
+          name: example-kubernetes-volume

@@ -2,11 +2,13 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: example-ingress
-  annotations:
-    kubernetes.io/ingress.class: "nginx" # 控制器使用nginx
+  namespace: example-kubernetes
+#  annotations:
+#    kubernetes.io/ingress.class: "kong" # 控制器使用nginx
 spec:
+  ingressClassName: nginx
   rules:
-    - host: ingress.local
+    - host: ingress.example-kubernetes.com
       http:
         paths:
           - path: /apple

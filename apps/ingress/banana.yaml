@@ -1,24 +1,26 @@
 kind: Pod
 apiVersion: v1
 metadata:
-  name: apple-app
+  name: banana-app
+  namespace: example-kubernetes
   labels:
-    app: apple
+    app: banana
 spec:
   containers:
-    - name: apple-app
+    - name: banana-app
       image: hashicorp/http-echo
       args:
-        - "-text=apple"
+        - "-text=banana"
 
 ---
 
 kind: Service
 apiVersion: v1
 metadata:
-  name: apple-service
+  name: banana-service
+  namespace: example-kubernetes
 spec:
   selector:
-    app: apple
+    app: banana
   ports:
     - port: 5678 # Default port for image
