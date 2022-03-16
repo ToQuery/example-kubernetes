@@ -1,0 +1,26 @@
+# https://docs.konghq.com/kubernetes-ingress-controller/2.2.x/concepts/ingress-classes/
+
+kind: Ingress
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: example-ingress-controller-kong
+spec:
+  ingressClassName: kong
+  rules:
+    - host: ingress-controller-nginx.example-kubernetes.com
+      http:
+        paths:
+          - path: /apple
+            pathType: Prefix
+            backend:
+              service:
+                name: apple-service
+                port:
+                  number: 5678
+          - path: /banana
+            pathType: Prefix
+            backend:
+              service:
+                name: banana-service
+                port:
+                  number: 5678

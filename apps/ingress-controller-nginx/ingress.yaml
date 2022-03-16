@@ -3,12 +3,12 @@ kind: Ingress
 metadata:
   name: example-ingress
   namespace: example-kubernetes
-#  annotations:
+#  annotations:ingress-controller-kong
 #    kubernetes.io/ingress.class: "kong" # 控制器使用nginx
 spec:
   ingressClassName: nginx
   rules:
-    - host: ingress.example-kubernetes.com
+    - host: ingress-controller-nginx.example-kubernetes.com
       http:
         paths:
           - path: /apple

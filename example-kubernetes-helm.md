@@ -4,12 +4,24 @@
 ```shell
 helm repo add minio https://charts.min.io
 helm repo add kong https://charts.konghq.com
+helm repo add elastic https://helm.elastic.co
 helm repo add bitnami https://charts.bitnami.com/bitnami
 helm repo add grafana https://grafana.github.io/helm-charts
 helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
 helm repo add kubernetes-dashboard https://kubernetes.github.io/dashboard
 helm repo add skywalking https://apache.jfrog.io/artifactory/skywalking-helm
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+```
+
+## elasticserch
+
+```shell
+helm upgrade --install elasticsearch elasticsearch \
+--repo https://helm.elastic.co \
+--namespace example-kubernetes --create-namespace \
+--set controller.metrics.enabled=true \
+--set-string controller.podAnnotations."prometheus\.io/scrape"="true" \
+--set-string controller.podAnnotations."prometheus\.io/port"="10254"
 ```
 
 ## nginx
