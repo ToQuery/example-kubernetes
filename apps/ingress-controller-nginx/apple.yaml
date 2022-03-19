@@ -2,7 +2,7 @@ kind: Pod
 apiVersion: v1
 metadata:
   name: apple-app
-  namespace: example-kubernetes
+  # namespace: example-kubernetes
   labels:
     app: apple
 spec:
@@ -18,7 +18,7 @@ kind: Service
 apiVersion: v1
 metadata:
   name: apple-service
-  namespace: example-kubernetes
+  # namespace: example-kubernetes
 spec:
   selector:
     app: apple

@@ -2,7 +2,7 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: example-ingress
-  namespace: example-kubernetes
+# namespace: example-kubernetes
 #  annotations:ingress-controller-kong
 #    kubernetes.io/ingress.class: "kong" # 控制器使用nginx
 spec:

@@ -2,7 +2,8 @@
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
-  name: example-kubernetes-app-grafana-storage
+  name: grafana-storage
+  namespace: monitoring
 provisioner: kubernetes.io/no-provisioner
 volumeBindingMode: WaitForFirstConsumer
 
@@ -10,7 +11,8 @@ volumeBindingMode: WaitForFirstConsumer
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: example-kubernetes-app-grafana-pv
+  name: grafana-pv
+  namespace: monitoring
 spec:
   capacity:
     storage: 2Gi
@@ -18,7 +20,7 @@ spec:
   accessModes:
     - ReadWriteOnce       # 卷可以被一个节点以读写方式挂载
   persistentVolumeReclaimPolicy: Delete
-  storageClassName: example-kubernetes-app-grafana-storage
+  storageClassName: grafana-storage
   local:
     path: /Users/toquery/data/grafana-data
   nodeAffinity:
@@ -36,10 +38,11 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: grafana-pvc
+  namespace: monitoring
 spec:
   accessModes:
     - ReadWriteOnce
-  storageClassName: example-kubernetes-app-grafana-storage
+  storageClassName: grafana-storage
   resources:
     requests:
       storage: 1Gi
@@ -50,6 +53,7 @@ metadata:
   labels:
     app: grafana
   name: grafana
+  namespace: monitoring
 spec:
   selector:
     matchLabels:
@@ -71,28 +75,6 @@ spec:
             - containerPort: 3000
               name: http-grafana
               protocol: TCP
-#          readinessProbe:
-#            failureThreshold: 3
-#            httpGet:
-#              path: /robots.txt
-#              port: 3000
-#              scheme: HTTP
-#            initialDelaySeconds: 10
-#            periodSeconds: 30
-#            successThreshold: 1
-#            timeoutSeconds: 2
-#          livenessProbe:
-#            failureThreshold: 3
-#            initialDelaySeconds: 30
-#            periodSeconds: 10
-#            successThreshold: 1
-#            tcpSocket:
-#              port: 3000
-#            timeoutSeconds: 1
-          resources:
-            requests:
-              cpu: 250m
-              memory: 750Mi
           volumeMounts:
             - mountPath: /var/lib/grafana
               name: grafana-pv
@@ -104,7 +86,8 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: grafana
+  name: grafana-service
+  namespace: monitoring
 spec:
   ports:
     - port: 3000
@@ -113,4 +96,27 @@ spec:
   selector:
     app: grafana
   sessionAffinity: None
-  type: NodePort
+  type: ClusterIP
+---
+## Nginx Ingress
+## Follow https://devopscube.com/setup-ingress-kubernetes-nginx-controller/
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: grafana-ui
+  namespace: monitoring
+  annotations:
+    kubernetes.io/ingress.class: nginx
+spec:
+  rules:
+    # Use the host you used in your kubernetes Ingress Configurations
+    - host: grafana.example-kubernetes.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: grafana-service
+                port:
+                  number: 3000

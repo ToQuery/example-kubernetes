@@ -2,6 +2,8 @@
 ## 添加仓库
 
 ```shell
+helm repo add jetstack https://charts.jetstack.io
+
 helm repo add minio https://charts.min.io
 helm repo add kong https://charts.konghq.com
 helm repo add elastic https://helm.elastic.co

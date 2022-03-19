@@ -2,7 +2,7 @@ kind: Pod
 apiVersion: v1
 metadata:
   name: banana-app
-  namespace: example-kubernetes
+  # namespace: example-kubernetes
   labels:
     app: banana
 spec:
@@ -18,7 +18,7 @@ kind: Service
 apiVersion: v1
 metadata:
   name: banana-service
-  namespace: example-kubernetes
+  # namespace: example-kubernetes
 spec:
   selector:
     app: banana
